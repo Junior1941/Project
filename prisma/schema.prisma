@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  lastName  String
+  email     String    @unique
+  address   String
+  phone     String?
+  username  String    @unique
+  password  String
+  orders    Order[]
+  addresses Address[]
+}
+
+model Address {
+  id            Int      @id @default(autoincrement())
+  customerID    Int
+  recipientName String
+  phoneNumber   String
+  streetAddress String
+  city          String
+  state         String
+  postalCode    String
+  Customer      Customer @relation(fields: [customerID], references: [id])
+}
+
+model Order {
+  id             Int       @id @default(autoincrement())
+  customerID     Int
+  orderDate      DateTime
+  totalAmount    Float
+  paymentMethod  String
+  Customer       Customer @relation(fields: [customerID], references: [id])
+  orderItems     OrderItem[]
+  Payment        Payment?
+}
+
+model OrderItem {
+  id        Int    @id @default(autoincrement())
+  orderID   Int
+  shoeID    Int
+  subtotal  Float
+  quantity  Int
+  Order     Order  @relation(fields: [orderID], references: [id])
+  Shoe      Shoe   @relation(fields: [shoeID], references: [id])
+}
+
+model Payment {
+  id          Int     @id @default(autoincrement())
+  orderID     Int     @unique
+  paymentDate DateTime
+  amount      Float
+  status      String
+  Order       Order   @relation(fields: [orderID], references: [id])
+}
+
+model Shoe {
+  id            Int         @id @default(autoincrement())
+  name          String
+  brand         String
+  category      String
+  size          Int
+  color         String
+  price         Float
+  stockQuantity Int
+  description   String?
+  orderItems    OrderItem[]
+}
